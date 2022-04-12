@@ -1,7 +1,11 @@
+import {createRequire} from 'module';
+
+const require = createRequire(import.meta.url)
 const express = require('express')
 const app = express()
 
-const port = 5000
+const args = require('minimist')(process.argv.slice(2));
+const port = args.port || process.env.PORT || 5000
 
 // Start an app server
 const server = app.listen(port, () => {
@@ -14,7 +18,7 @@ app.get('/app', (req, res) => {
     // Respond with status message "OK"
     res.statusMessage = 'OK';
     res.writeHead(res.statusCode, { 'Content-Type' : 'text/plain' });
-    res.status(res.statusCode).end(res.statusMessage)
+    res.status(res.statusCode).end(res.statusCode + ' ' + res.statusMessage)
 })
 
 app.get('/app/flip', (req, res) => {
