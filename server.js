@@ -1,0 +1,92 @@
+const express = require('express')
+const app = express()
+const args = require('minimist')(process.argv.slice(2))
+
+const port = args.port || 5000
+
+// Start an app server
+const server = app.listen(port, () => {
+    console.log('App listening on port %PORT%'.replace('%PORT%', port))
+});
+
+// Default response for any other request
+app.use(function(req, res) {
+    res.status(404).send('404 NOT FOUND')
+    res.type('text/plain')
+})
+
+app.get('/app/', (req, res) => {
+    // Respond with status 200
+    res.statusCode = 200;
+    // Respond with status message "OK"
+    res.statusMessage = 'OK';
+    res.writeHead(res.statusCode, { 'Content-Type' : 'text/plain' });
+    res.end(res.statusCode + ' ' + res.statusMessage)
+})
+
+app.get('/app/flip/', (req, res) => {
+    res.type('json')
+    res.json({"flip": coinFlip()})
+})
+
+app.get('/app/flips/:number', (req, res) => {
+    const flips = coinFlips(req.params.number)
+    const count = countFlips(flips)
+    res.type('json')
+    res.json({"raw": flips, "summary": count})
+})
+
+app.get('/app/flip/call/heads', (req, res) => {
+    res.type('json')
+    res.json(flipACoin("heads"))
+})
+
+app.get('/app/flip/call/tails', (req, res) => {
+    res.type('json')
+    res.json(flipACoin("tails"))
+})
+
+// Coin Flip Functions
+function coinFlip() {
+    if (Math.random() < 0.5) {
+        return 'heads';
+    }
+        return 'tails';
+}
+
+function coinFlips(flips) {
+    let flipSet = new Array(flips);
+    let x = 0;
+    while (x < flips) {
+        flipSet[x] = coinFlip();
+        x = x + 1;
+    }
+    return flipSet;
+}
+
+function countFlips(array) {
+    let headCount = 0;
+    let tailsCount = 0;
+    for (let x = 0; x < array.length; x++) {
+        if (array[x] == 'heads') {
+            headCount++;
+        }
+        else {tailsCount++;}
+    }
+    if (headCount == 0) {return {tails: tailsCount}}
+    if (tailsCount == 0) {return {heads: headCount}}
+    else {
+        return {heads: headCount, tails: tailsCount};
+    }
+    
+}
+
+function flipACoin(call) {
+    const flipResult = coinFlip();
+    if (flipResult == call) {
+        return {call: call, flip: flipResult, result: 'win'};
+    }
+    else {
+        return {call: call, flip: flipResult, result: 'lose'}
+    }
+}
